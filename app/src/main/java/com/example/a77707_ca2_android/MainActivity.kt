@@ -30,19 +30,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-
 import androidx.compose.ui.tooling.preview.Preview
 
-// Firebase Authentication
 import com.google.firebase.auth.FirebaseAuth
-
-// Application Theme
 import com.example.a77707_ca2_android.ui.theme._77707CA2ANDROIDTheme
 
 
 class MainActivity : ComponentActivity() {
 
-    // Firebase Authentication instance
+    // Firebase Authentication
     private val auth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
     }
@@ -54,12 +50,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            // Check if the user is already logged in
+            // Question 2 - Firebase Login State
             var isLoggedIn by remember {
                 mutableStateOf(auth.currentUser != null)
             }
 
-            // Email and password fields
             var email by remember {
                 mutableStateOf("")
             }
@@ -68,7 +63,6 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf("")
             }
 
-            // Authentication state
             var errorMessage by remember {
                 mutableStateOf("")
             }
@@ -77,16 +71,18 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(false)
             }
 
-            // Counter 1 uses remember
-            // It resets when the Activity is recreated
+            // Question 1 - Counters
             var counter1 by remember {
                 mutableIntStateOf(0)
             }
 
-            // Counter 2 uses rememberSaveable
-            // It keeps its value after configuration changes
             var counter2 by rememberSaveable {
                 mutableIntStateOf(0)
+            }
+
+            // Navigation between screens
+            var currentScreen by remember {
+                mutableStateOf("Counters")
             }
 
             _77707CA2ANDROIDTheme {
@@ -97,34 +93,91 @@ class MainActivity : ComponentActivity() {
 
                     if (isLoggedIn) {
 
-                        // Display counters after successful login
-                        CounterScreen(
-                            counter1 = counter1,
-                            counter2 = counter2,
+                        when (currentScreen) {
 
-                            onIncrement = {
-                                counter1++
-                                counter2++
-                            },
+                            "Exceptions1" -> {
 
-                            onLogout = {
-                                auth.signOut()
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(innerPadding)
+                                ) {
 
-                                isLoggedIn = false
-                                email = ""
-                                password = ""
-                                errorMessage = ""
+                                    Button(
+                                        onClick = {
+                                            currentScreen = "Counters"
+                                        },
+                                        modifier = Modifier.padding(16.dp)
+                                    ) {
+                                        Text("Back to Counters")
+                                    }
 
-                                counter1 = 0
-                                counter2 = 0
-                            },
+                                    ExceptionsScreen()
+                                }
+                            }
 
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                            "Exceptions2" -> {
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(innerPadding)
+                                ) {
+
+                                    Button(
+                                        onClick = {
+                                            currentScreen = "Counters"
+                                        },
+                                        modifier = Modifier.padding(16.dp)
+                                    ) {
+                                        Text("Back to Counters")
+                                    }
+
+                                    Exceptions2Screen()
+                                }
+                            }
+
+                            else -> {
+
+                                CounterScreen(
+                                    counter1 = counter1,
+                                    counter2 = counter2,
+
+                                    onIncrement = {
+                                        counter1++
+                                        counter2++
+                                    },
+
+                                    onExceptionsClick = {
+                                        currentScreen = "Exceptions1"
+                                    },
+
+                                    onExceptions2Click = {
+                                        currentScreen = "Exceptions2"
+                                    },
+
+                                    onLogout = {
+                                        auth.signOut()
+
+                                        isLoggedIn = false
+                                        currentScreen = "Counters"
+
+                                        email = ""
+                                        password = ""
+                                        errorMessage = ""
+
+                                        counter1 = 0
+                                        counter2 = 0
+                                    },
+
+                                    modifier = Modifier.padding(innerPadding)
+                                )
+                            }
+                        }
 
                     } else {
 
-                        // Display Firebase login screen
+                        // Question 2 - Firebase Login
                         LoginScreen(
                             email = email,
                             password = password,
@@ -151,7 +204,6 @@ class MainActivity : ComponentActivity() {
                                     isLoading = true
                                     errorMessage = ""
 
-                                    // Firebase Email/Password Authentication
                                     auth.signInWithEmailAndPassword(
                                         email.trim(),
                                         password
@@ -161,14 +213,12 @@ class MainActivity : ComponentActivity() {
 
                                         if (task.isSuccessful) {
 
-                                            // Login successful
                                             isLoggedIn = true
                                             errorMessage = ""
                                             password = ""
 
                                         } else {
 
-                                            // Login failed
                                             errorMessage =
                                                 "Login failed. Please check your credentials."
                                         }
@@ -186,8 +236,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
-// LOGIN SCREEN
-// Receives state and callbacks from MainActivity
+// QUESTION 2 - LOGIN SCREEN
 
 @Composable
 fun LoginScreen(
@@ -210,15 +259,10 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text(
-            text = "Firebase Login"
-        )
+        Text("Firebase Login")
 
-        Spacer(
-            modifier = Modifier.height(20.dp)
-        )
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Email field
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
@@ -228,11 +272,8 @@ fun LoginScreen(
             singleLine = true
         )
 
-        Spacer(
-            modifier = Modifier.height(12.dp)
-        )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Password field
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
@@ -243,11 +284,8 @@ fun LoginScreen(
             singleLine = true
         )
 
-        Spacer(
-            modifier = Modifier.height(20.dp)
-        )
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Login button
         Button(
             onClick = onLogin,
             enabled = !isLoading
@@ -255,40 +293,32 @@ fun LoginScreen(
             Text("Login")
         }
 
-        // Loading indicator
         if (isLoading) {
 
-            Spacer(
-                modifier = Modifier.height(12.dp)
-            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             CircularProgressIndicator()
         }
 
-        // Error message
         if (errorMessage.isNotEmpty()) {
 
-            Spacer(
-                modifier = Modifier.height(12.dp)
-            )
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = errorMessage
-            )
+            Text(errorMessage)
         }
     }
 }
 
 
-// COUNTER SCREEN
-// State Hoisting:
-// Receives counter values and actions from MainActivity
+// QUESTION 1 - COUNTER SCREEN
 
 @Composable
 fun CounterScreen(
     counter1: Int,
     counter2: Int,
     onIncrement: () -> Unit,
+    onExceptionsClick: () -> Unit,
+    onExceptions2Click: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -310,9 +340,7 @@ fun CounterScreen(
             text = "Counter 2 (RememberSaveable): $counter2"
         )
 
-        Spacer(
-            modifier = Modifier.height(12.dp)
-        )
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = onIncrement
@@ -320,11 +348,26 @@ fun CounterScreen(
             Text("Increment")
         }
 
-        Spacer(
-            modifier = Modifier.height(20.dp)
-        )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Logout button
+        // Question 3 - Exceptions 1
+        Button(
+            onClick = onExceptionsClick
+        ) {
+            Text("Exceptions 1")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Question 4 - Exceptions 2
+        Button(
+            onClick = onExceptions2Click
+        ) {
+            Text("Exceptions 2")
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         Button(
             onClick = onLogout
         ) {
@@ -346,6 +389,8 @@ fun CounterScreenPreview() {
             counter1 = 0,
             counter2 = 0,
             onIncrement = {},
+            onExceptionsClick = {},
+            onExceptions2Click = {},
             onLogout = {}
         )
     }
