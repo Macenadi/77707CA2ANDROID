@@ -36,7 +36,7 @@ fun Exceptions2Screen() {
 
         Button(onClick = {
 
-            // Print the entered word in Logcat
+            //  Logcat page
             Log.d("ExceptionTest", "Checking word: $word")
 
             try {
